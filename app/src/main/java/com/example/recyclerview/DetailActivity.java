@@ -1,6 +1,7 @@
 package com.example.recyclerview;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -11,12 +12,16 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-
+import java.util.HashSet;
+import java.util.Set;
 
 public class DetailActivity extends AppCompatActivity {
 
     ImageView detailImageView;
     TextView detailTextView;
+    private SharedPreferences sharedPreferences;
+    private static final String PREFS_NAME = "FoodPrefs";
+    private static final String VISITED_ITEMS_KEY = "visited_items";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +30,9 @@ public class DetailActivity extends AppCompatActivity {
 
         detailImageView = findViewById(R.id.detailImageView);
         detailTextView = findViewById(R.id.detailTextView);
+
+        // Khởi tạo SharedPreferences
+        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
         // Nhận dữ liệu từ Intent
         Food food = getIntent().getParcelableExtra("foodItem");
@@ -35,6 +43,9 @@ public class DetailActivity extends AppCompatActivity {
                 "\nMô tả: " + food.getDescription() +
                 "\nGiá: " + food.getPrice() + " VND";
         detailTextView.setText(detailText);
+
+        // Lưu món ăn đã xem vào SharedPreferences
+        saveVisitedItem(food.getName());
 
         Button orderButton = findViewById(R.id.orderButton);
         orderButton.setOnClickListener(v -> {
@@ -70,5 +81,15 @@ public class DetailActivity extends AppCompatActivity {
                 startActivity(webIntent);
             }
         });
+    }
+
+    private void saveVisitedItem(String foodName) {
+        Set<String> visitedItems = sharedPreferences.getStringSet(VISITED_ITEMS_KEY, new HashSet<>());
+        Set<String> newVisitedItems = new HashSet<>(visitedItems);
+        newVisitedItems.add(foodName);
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putStringSet(VISITED_ITEMS_KEY, newVisitedItems);
+        editor.apply();
     }
 }
